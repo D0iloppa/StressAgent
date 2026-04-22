@@ -1,0 +1,31 @@
+{
+  "name": "stressagent",
+  "version": "1.0.0",
+  "description": "CLI 부하 테스트 도구 - 실제 브라우저 렌더링을 통한 현실적인 부하 발생",
+  "main": "bin/stressagent.js",
+  "bin": {
+    "stressagent": "bin/stressagent.js"
+  },
+  "scripts": {
+    "start": "node bin/stressagent.js config.yml",
+    "test": "node bin/stressagent.js config.yml"
+  },
+  "keywords": [
+    "stress-test",
+    "load-test",
+    "puppeteer",
+    "performance",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^19.9.0",
+    "yaml": "^2.2.2",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

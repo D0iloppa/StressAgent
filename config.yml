@@ -1,0 +1,19 @@
+# StressAgent config.yml
+# 부하 테스트 설정
+
+# 필수 설정
+url: "http://121.136.244.39:18443/WELLERP/"
+workers: 10
+iterations: 1
+scenarioFile: "./scenarios/login-traverse.js"
+
+# 선택 옵션
+timeout: 60000
+headless: true
+slowMo: 100
+
+viewport:
+  width: 1280
+  height: 720
+
+logLevel: "info"
