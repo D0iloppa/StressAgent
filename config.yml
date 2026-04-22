@@ -9,7 +9,7 @@ scenarioFile: "./scenarios/login-traverse.js"
 
 # 선택 옵션
 timeout: 60000
-headless: true
+headless: "new"
 slowMo: 100
 
 viewport:
@@ -17,3 +17,6 @@ viewport:
   height: 720
 
 logLevel: "info"
+
+# 반복 모드 - 스레드풀 설정
+threadPoolTerm: 100  # 다음 작업 할당 전 대기 시간 (밀리초, 기본값: 100)

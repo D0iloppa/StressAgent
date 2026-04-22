@@ -92,49 +92,49 @@ module.exports = {
       }
     ];
 
-    // 4. 각 페이지 순회
-    for (const pageInfo of pages) {
-      try {
-        const pageUrl = `${BASE_URL}${pageInfo.path}`;
-        console.log(`[Scenario] ${pageInfo.name} 페이지 접속 중... (${pageUrl})`);
-        
-        // 페이지 접속 (모든 네트워크 요청 완료 대기)
-        await page.goto(pageUrl, {
-          waitUntil: 'networkidle2',
-          timeout: 45000
-        });
+    // 4. 랜덤 페이지 선택 및 접속
+    const randomIndex = Math.floor(Math.random() * pages.length);
+    const pageInfo = pages[randomIndex];
 
-        // AJAX 요청 완료 대기 (최대 10초)
-        await page.waitForFunction(
-          () => {
-            // jQuery AJAX 상태 확인
-            if (typeof window.$ !== 'undefined') {
-              return window.$.active === 0;
-            }
-            // Axios 상태 확인
-            if (typeof window.axios !== 'undefined') {
-              return true; // 간단한 확인
-            }
-            // 기본: 2초 대기
-            return true;
-          },
-          { timeout: 10000 }
-        ).catch(() => {
-          // 타임아웃 해도 계속 진행
-          console.log(`[Scenario] ${pageInfo.name} AJAX 완료 확인 시간 초과 (계속 진행)`);
-        });
+    try {
+      const pageUrl = `${BASE_URL}${pageInfo.path}`;
+      console.log(`[Scenario] 랜덤 선택 페이지: ${pageInfo.name} (${pageUrl})`);
+      
+      // 페이지 접속 (모든 네트워크 요청 완료 대기)
+      await page.goto(pageUrl, {
+        waitUntil: 'networkidle2',
+        timeout: 45000
+      });
 
-        // 페이지 콘텐츠가 로드될 때까지 추가 대기
-        await page.waitForTimeout(1000);
+      // AJAX 요청 완료 대기 (최대 10초)
+      await page.waitForFunction(
+        () => {
+          // jQuery AJAX 상태 확인
+          if (typeof window.$ !== 'undefined') {
+            return window.$.active === 0;
+          }
+          // Axios 상태 확인
+          if (typeof window.axios !== 'undefined') {
+            return true; // 간단한 확인
+          }
+          // 기본: 2초 대기
+          return true;
+        },
+        { timeout: 10000 }
+      ).catch(() => {
+        // 타임아웃 해도 계속 진행
+        console.log(`[Scenario] ${pageInfo.name} AJAX 완료 확인 시간 초과 (계속 진행)`);
+      });
 
-        console.log(`[Scenario] ${pageInfo.name} 페이지 완료`);
+      // 페이지 콘텐츠가 로드될 때까지 추가 대기
+      await page.waitForTimeout(1000);
 
-      } catch (error) {
-        console.warn(`[Scenario] ${pageInfo.name} 페이지 처리 중 오류: ${error.message}`);
-        // 한 페이지 실패 시에도 계속 진행
-      }
+      console.log(`[Scenario] ${pageInfo.name} 페이지 완료`);
+
+    } catch (error) {
+      console.warn(`[Scenario] ${pageInfo.name} 페이지 처리 중 오류: ${error.message}`);
     }
 
-    console.log('[Scenario] 모든 페이지 순회 완료');
+    console.log('[Scenario] 페이지 접속 완료');
   }
 };

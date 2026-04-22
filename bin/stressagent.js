@@ -14,7 +14,7 @@ const path = require('path');
 const readline = require('readline');
 const { parseConfig } = require('../src/configParser');
 const { loadScenario } = require('../src/scenarioLoader');
-const { executeWorkerPool } = require('../src/workerPool');
+const { executeWorkerPool, executeWorkerPoolAsThreadPool } = require('../src/workerPool');
 const MetricsCollector = require('../src/metricsCollector');
 const { ProgressPrinter, saveResultAsJSON, saveResultAsCSV, printSimpleSummary } = require('../src/outputHandler');
 
@@ -144,55 +144,45 @@ async function runSimpleMode(config, scenario) {
 }
 
 /**
- * 반복 모드 실행
+ * 반복 모드 실행 (스레드풀 패턴)
  */
 async function runRepeatMode(config, scenario) {
   try {
     // 배너 출력
     console.log('\n' + '='.repeat(60));
-    console.log('🔄 반복 모드 시작 (무한 반복)');
+    console.log('🔄 반복 모드 시작 (스레드풀 패턴)');
     console.log('='.repeat(60) + '\n');
 
-    // 워커 수의 최소/최대값 설정 (max/2 ~ max)
-    const workerMin = Math.ceil(config.workers / 2);
-    const workerMax = config.workers;
+    // 스레드풀 설정 확인
+    const threadPoolTerm = config.threadPoolTerm || 100;
+    console.log(`✓ 워커 수: ${config.workers}`);
+    console.log(`✓ 작업 간 대기 시간 (term): ${threadPoolTerm}ms`);
+    console.log(`✓ 스레드풀 시작...\n`);
 
-    let taskNum = 0;
+    // 메트릭 수집
+    const metrics = new MetricsCollector();
 
-    // 무한 반복 루프
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      taskNum++;
+    // 작업 완료 시 호출될 콜백 (선택적)
+    let taskCount = 0;
+    const onTaskComplete = () => {
+      taskCount++;
+      if (taskCount % 100 === 0) {
+        console.log(`✓ 완료된 작업: ${taskCount}건`);
+      }
+    };
 
-      // 랜덤 워커 수 할당
-      const randomWorkers = Math.floor(Math.random() * (workerMax - workerMin + 1)) + workerMin;
-      
-      // 임시 설정 생성 (워커 수만 변경)
-      const tempConfig = { ...config, workers: randomWorkers };
+    const startTime = Date.now();
 
-      // 배너 출력
-      printBanner(tempConfig, 'repeat', taskNum);
+    // 스레드풀 기반 부하 테스트 실행 (무한 반복)
+    await executeWorkerPoolAsThreadPool(config, scenario, metrics, null, onTaskComplete);
 
-      console.log(`워커 수: ${randomWorkers} | 반복 횟수: ${config.iterations}`);
-      console.log('🔄 작업 시작...\n');
+    const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(3);
 
-      const startTime = Date.now();
-
-      // 메트릭 수집
-      const metrics = new MetricsCollector();
-
-      // 부하 테스트 실행 (진행 표시 없음)
-      await executeWorkerPool(tempConfig, scenario, metrics, null);
-
-      const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(3);
-
-      // 간단한 요약 정보만 출력
-      printSimpleSummary(metrics, taskNum, elapsedTime);
-
-      // 1초 대기 후 다음 task
-      console.log('⏳ 1초 대기 중...\n');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+    // 간단한 요약 정보 출력
+    console.log('\n' + '='.repeat(60));
+    console.log(`⏱️  총 소요 시간: ${elapsedTime}s`);
+    printSimpleSummary(metrics, 1, elapsedTime);
+    console.log('='.repeat(60) + '\n');
 
   } catch (error) {
     console.error(`\n❌ 오류: ${error.message}`);
