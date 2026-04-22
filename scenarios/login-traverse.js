@@ -3,7 +3,7 @@
  * 
  * 시나리오:
  * 1. WELLERP 사이트에 접속
- * 2. 로그인 수행 (아이디: YOUR_USERNAME, 비밀번호: YOUR_PASSWORD)
+ * 2. 로그인 수행 (환경변수에서 아이디/비밀번호 로드)
  * 3. 모니터링, 보고서 관리, 개발 업무보고 페이지 순회
  * 4. 각 페이지에서 모든 리소스 로드 및 JavaScript 실행 완료 대기
  */
@@ -12,8 +12,8 @@ module.exports = {
   name: "WELLERP Login and Page Traverse",
   run: async (page) => {
     const BASE_URL = 'http://121.136.244.39:18443/WELLERP/';
-    const USERNAME = 'YOUR_USERNAME';
-    const PASSWORD = 'YOUR_PASSWORD';
+    const USERNAME = process.env.WELLERP_USERNAME || 'your_username';
+    const PASSWORD = process.env.WELLERP_PASSWORD || 'your_password';
 
     // 콘솔 메시지 출력 (디버깅용)
     page.on('console', (msg) => {

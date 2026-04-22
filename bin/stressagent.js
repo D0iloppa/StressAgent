@@ -7,6 +7,9 @@
  * 모드 선택만 함: 단순 모드 vs 반복 모드
  */
 
+// 환경변수 로드
+require('dotenv').config();
+
 const path = require('path');
 const readline = require('readline');
 const { parseConfig } = require('../src/configParser');
